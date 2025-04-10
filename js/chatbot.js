@@ -37,6 +37,8 @@ function initChatbot() {
             chatWindow.style.display = 'flex';
             chatBubble.style.display = 'none';
             messageInput.focus(); // Focus on input field when chat opens
+            
+            checkForLongMessages();
         } else {
             chatWindow.style.display = 'none';
             chatBubble.style.display = 'flex';
@@ -90,10 +92,10 @@ function initChatbot() {
         const hasLongMessage = state.messages.some(msg => msg.text.length > 100);
         
         if (hasLongMessage) {
-            chatWindow.style.width = '720px';
+            chatWindow.style.setProperty('width', '720px', 'important');
             console.log('Chat window expanded due to long message');
         } else {
-            chatWindow.style.width = '360px';
+            chatWindow.style.setProperty('width', '360px', 'important');
             console.log('Chat window normal size');
         }
     }
