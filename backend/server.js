@@ -11,8 +11,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const apiKey = process.env.OPENAI_API_KEY || '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';
-console.log('Using test API key');
+const apiKey = process.env.OPENAI_API_KEY || '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';
+console.log('Using provided API key');
 
 const openai = new OpenAI({
   apiKey: apiKey,
