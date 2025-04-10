@@ -21,6 +21,10 @@ if (!apiKey) {
   
   if (apiKey.startsWith('sk-proj-')) {
     console.log('Detected project-scoped API key format');
+    console.log('Note: If you encounter authentication issues, please ensure:');
+    console.log('1. The API key has access to the Assistants API');
+    console.log('2. The OpenAI account has proper billing setup');
+    console.log('3. You are using the correct Assistant ID');
   }
 }
 
