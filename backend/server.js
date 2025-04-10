@@ -31,7 +31,9 @@ if (!ASSISTANT_ID) {
 
 app.post('/api/threads', async (req, res) => {
   try {
+    console.log('Creating new thread...');
     const thread = await openai.threads.create();
+    console.log('Thread created:', thread.id);
     res.json({ threadId: thread.id });
   } catch (error) {
     console.error('Error creating thread:', error);
@@ -48,6 +50,8 @@ app.post('/api/threads/:threadId/messages', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
+    console.log(`Adding message to thread ${threadId}:`, message.substring(0, 50) + (message.length > 50 ? '...' : ''));
+    
     const threadMessage = await openai.threads.messages.create(
       threadId,
       {
@@ -56,6 +60,7 @@ app.post('/api/threads/:threadId/messages', async (req, res) => {
       }
     );
 
+    console.log('Message added:', threadMessage.id);
     res.json({ messageId: threadMessage.id });
   } catch (error) {
     console.error('Error adding message:', error);
@@ -72,57 +77,75 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
 
   try {
     if (!apiKey || !ASSISTANT_ID) {
+      console.log('Missing API key or Assistant ID, using local mode');
       return handleLocalMode(res, threadId);
     }
 
-    const run = await openai.threads.runs.create(
-      threadId,
-      {
-        assistant_id: ASSISTANT_ID,
-        stream: true,
-      }
-    );
-
-    const stream = await openai.threads.runs.stream(
-      threadId,
-      run.id
-    );
-
-    stream.on('textDelta', (delta, snapshot) => {
-      res.write(`data: ${JSON.stringify({ type: 'textDelta', delta, snapshot })}\n\n`);
-    });
-
-    stream.on('toolCallCreated', (toolCall) => {
-      res.write(`data: ${JSON.stringify({ type: 'toolCallCreated', toolCall })}\n\n`);
-    });
-
-    stream.on('toolCallDelta', (delta, snapshot) => {
-      res.write(`data: ${JSON.stringify({ type: 'toolCallDelta', delta, snapshot })}\n\n`);
-    });
-
-    stream.on('messageCreated', (message) => {
-      res.write(`data: ${JSON.stringify({ type: 'messageCreated', message })}\n\n`);
-    });
-
-    stream.on('messageDelta', (delta, snapshot) => {
-      res.write(`data: ${JSON.stringify({ type: 'messageDelta', delta, snapshot })}\n\n`);
-    });
-
-    stream.on('error', (error) => {
-      console.error('Stream error:', error);
+    console.log('OpenAI SDK version:', require('openai/package.json').version);
+    console.log(`Running assistant ${ASSISTANT_ID} on thread ${threadId}`);
+    
+    try {
+      const run = await openai.threads.runs.create(
+        threadId,
+        {
+          assistant_id: ASSISTANT_ID,
+          stream: true,
+        }
+      );
+      
+      console.log('Run created successfully:', run.id);
+      
+      const stream = await openai.threads.runs.stream(
+        threadId,
+        run.id
+      );
+      
+      stream.on('textDelta', (delta, snapshot) => {
+        console.log('Text delta received:', delta.value);
+        res.write(`data: ${JSON.stringify({ type: 'textDelta', delta, snapshot })}\n\n`);
+      });
+  
+      stream.on('toolCallCreated', (toolCall) => {
+        console.log('Tool call created:', toolCall.type);
+        res.write(`data: ${JSON.stringify({ type: 'toolCallCreated', toolCall })}\n\n`);
+      });
+  
+      stream.on('toolCallDelta', (delta, snapshot) => {
+        console.log('Tool call delta received');
+        res.write(`data: ${JSON.stringify({ type: 'toolCallDelta', delta, snapshot })}\n\n`);
+      });
+  
+      stream.on('messageCreated', (message) => {
+        console.log('Message created:', message.id);
+        res.write(`data: ${JSON.stringify({ type: 'messageCreated', message })}\n\n`);
+      });
+  
+      stream.on('messageDelta', (delta, snapshot) => {
+        console.log('Message delta received');
+        res.write(`data: ${JSON.stringify({ type: 'messageDelta', delta, snapshot })}\n\n`);
+      });
+  
+      stream.on('error', (error) => {
+        console.error('Stream error:', error);
+        handleLocalMode(res, threadId);
+      });
+  
+      stream.on('end', () => {
+        console.log('Stream ended');
+        res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
+        res.end();
+      });
+  
+      req.on('close', () => {
+        console.log('Client disconnected, aborting stream');
+        if (stream && stream.controller) {
+          stream.controller.abort();
+        }
+      });
+    } catch (innerError) {
+      console.error('Error with streaming:', innerError);
       handleLocalMode(res, threadId);
-    });
-
-    stream.on('end', () => {
-      res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
-      res.end();
-    });
-
-    req.on('close', () => {
-      if (stream && stream.controller) {
-        stream.controller.abort();
-      }
-    });
+    }
   } catch (error) {
     console.error('Error running assistant:', error);
     handleLocalMode(res, threadId);
@@ -141,6 +164,7 @@ function handleLocalMode(res, threadId) {
   ];
   
   const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+  console.log('Sending mock response:', randomResponse);
   
   let currentIndex = 0;
   const typingInterval = setInterval(() => {
@@ -165,7 +189,11 @@ function handleLocalMode(res, threadId) {
 app.get('/api/threads/:threadId/messages', async (req, res) => {
   try {
     const { threadId } = req.params;
+    console.log(`Getting messages for thread ${threadId}`);
+    
     const messages = await openai.threads.messages.list(threadId);
+    console.log(`Retrieved ${messages.data.length} messages`);
+    
     res.json(messages);
   } catch (error) {
     console.error('Error getting messages:', error);
