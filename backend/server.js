@@ -12,10 +12,10 @@ app.use(cors());
 app.use(express.json());
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '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',
 });
 
-const ASSISTANT_ID = process.env.ASSISTANT_ID;
+const ASSISTANT_ID = process.env.ASSISTANT_ID || 'asst_ZYtRSeYDkSolxRbvS0iJ90AW';
 
 app.post('/api/threads', async (req, res) => {
   try {
