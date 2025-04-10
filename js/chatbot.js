@@ -86,16 +86,24 @@ function initChatbot() {
     
     /**
      * Check if any message in the conversation exceeds 100 characters
-     * If so, expand the chat window
+     * If so, switch to the expanded chat window
      */
     function checkForLongMessages() {
         const hasLongMessage = state.messages.some(msg => msg.text.length > 100);
+        const regularChatWindow = document.getElementById('chatWindow');
+        const expandedChatWindow = document.getElementById('chatWindowExpanded');
         
         if (hasLongMessage) {
-            chatWindow.className = 'chat-window-expanded';
+            regularChatWindow.style.display = 'none';
+            expandedChatWindow.style.display = 'flex';
+            
+            const expandedMessages = document.getElementById('chatMessagesExpanded');
+            expandedMessages.innerHTML = chatMessages.innerHTML;
+            
             console.log('Chat window expanded due to long message');
         } else {
-            chatWindow.className = 'chat-window';
+            regularChatWindow.style.display = 'flex';
+            expandedChatWindow.style.display = 'none';
             console.log('Chat window normal size');
         }
     }

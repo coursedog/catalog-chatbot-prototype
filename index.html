@@ -53,6 +53,25 @@
         </div>
     </div>
     
+    <!-- Expanded Chat Window Component (shown when messages are long) -->
+    <div class="chat-window-expanded" id="chatWindowExpanded" style="display: none;">
+        <div class="chat-header">
+            <div class="chat-title">University Catalog Assistant</div>
+            <button class="close-button" id="closeButtonExpanded" aria-label="Close chat">×</button>
+        </div>
+        <div class="chat-messages" id="chatMessagesExpanded">
+            <!-- Messages will be added here dynamically -->
+        </div>
+        <div class="chat-input">
+            <input type="text" class="message-input" id="messageInputExpanded" placeholder="Type your message here...">
+            <button class="send-button" id="sendButtonExpanded" aria-label="Send message">
+                <svg class="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    
     <script src="js/chatbot.js"></script>
 </body>
 </html>
