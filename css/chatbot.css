@@ -43,6 +43,12 @@
     overflow: hidden;
     z-index: 1000;
     display: none; /* Hidden by default */
+    transition: width 0.3s ease;
+}
+
+/* Expanded chat window for long messages */
+.chat-window.expanded {
+    width: 720px; /* Twice the original width */
 }
 
 /* Chat Header */

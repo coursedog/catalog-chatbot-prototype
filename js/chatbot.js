@@ -77,7 +77,23 @@ function initChatbot() {
         message.textContent = text;
         chatMessages.appendChild(message);
         
+        checkForLongMessages();
+        
         scrollToBottom();
+    }
+    
+    /**
+     * Check if any message in the conversation exceeds 100 characters
+     * If so, expand the chat window
+     */
+    function checkForLongMessages() {
+        const hasLongMessage = state.messages.some(msg => msg.text.length > 100);
+        
+        if (hasLongMessage) {
+            chatWindow.classList.add('expanded');
+        } else {
+            chatWindow.classList.remove('expanded');
+        }
     }
     
     /**
