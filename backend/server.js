@@ -31,12 +31,15 @@ if (!ASSISTANT_ID) {
 
 app.post('/api/threads', async (req, res) => {
   try {
-    console.log('Creating new thread...');
-    const thread = await openai.threads.create();
-    console.log('Thread created:', thread.id);
+    console.log('Creating new thread with OpenAI SDK version:', require('openai/package.json').version);
+    console.log('Attempting to create thread with beta namespace...');
+    
+    const thread = await openai.beta.threads.create();
+    console.log('Thread created successfully:', thread.id);
     res.json({ threadId: thread.id });
   } catch (error) {
     console.error('Error creating thread:', error);
+    console.error('Error details:', error.message);
     res.status(500).json({ error: 'Failed to create thread' });
   }
 });
@@ -52,7 +55,7 @@ app.post('/api/threads/:threadId/messages', async (req, res) => {
 
     console.log(`Adding message to thread ${threadId}:`, message.substring(0, 50) + (message.length > 50 ? '...' : ''));
     
-    const threadMessage = await openai.threads.messages.create(
+    const threadMessage = await openai.beta.threads.messages.create(
       threadId,
       {
         role: 'user',
@@ -64,6 +67,7 @@ app.post('/api/threads/:threadId/messages', async (req, res) => {
     res.json({ messageId: threadMessage.id });
   } catch (error) {
     console.error('Error adding message:', error);
+    console.error('Error details:', error.message);
     res.status(500).json({ error: 'Failed to add message to thread' });
   }
 });
@@ -85,7 +89,7 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
     console.log(`Running assistant ${ASSISTANT_ID} on thread ${threadId}`);
     
     try {
-      const run = await openai.threads.runs.create(
+      const run = await openai.beta.threads.runs.create(
         threadId,
         {
           assistant_id: ASSISTANT_ID,
@@ -95,7 +99,7 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
       
       console.log('Run created successfully:', run.id);
       
-      const stream = await openai.threads.runs.stream(
+      const stream = await openai.beta.threads.runs.stream(
         threadId,
         run.id
       );
@@ -191,12 +195,13 @@ app.get('/api/threads/:threadId/messages', async (req, res) => {
     const { threadId } = req.params;
     console.log(`Getting messages for thread ${threadId}`);
     
-    const messages = await openai.threads.messages.list(threadId);
+    const messages = await openai.beta.threads.messages.list(threadId);
     console.log(`Retrieved ${messages.data.length} messages`);
     
     res.json(messages);
   } catch (error) {
     console.error('Error getting messages:', error);
+    console.error('Error details:', error.message);
     res.status(500).json({ error: 'Failed to get messages from thread' });
   }
 });
