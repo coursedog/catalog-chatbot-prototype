@@ -48,10 +48,20 @@
 }
 
 /* Expanded chat window for long messages */
-.chat-window.expanded {
-    width: 720px !important; /* Twice the original width */
+.chat-window-expanded {
+    position: fixed !important;
+    bottom: 30px !important;
     right: 30px !important;
+    width: 720px !important; /* Twice the original width */
+    height: 550px !important;
     max-width: 80vw !important; /* Ensure it doesn't go off-screen */
+    background-color: white !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    z-index: 1000 !important;
 }
 
 /* Chat Header */
