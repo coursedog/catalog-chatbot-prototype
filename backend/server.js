@@ -31,7 +31,7 @@ if (!ASSISTANT_ID) {
 
 app.post('/api/threads', async (req, res) => {
   try {
-    const thread = await openai.beta.threads.create();
+    const thread = await openai.threads.create();
     res.json({ threadId: thread.id });
   } catch (error) {
     console.error('Error creating thread:', error);
@@ -48,7 +48,7 @@ app.post('/api/threads/:threadId/messages', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const threadMessage = await openai.beta.threads.messages.create(
+    const threadMessage = await openai.threads.messages.create(
       threadId,
       {
         role: 'user',
@@ -75,7 +75,7 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
       return handleLocalMode(res, threadId);
     }
 
-    const run = await openai.beta.threads.runs.create(
+    const run = await openai.threads.runs.create(
       threadId,
       {
         assistant_id: ASSISTANT_ID,
@@ -83,7 +83,7 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
       }
     );
 
-    const stream = await openai.beta.threads.runs.stream(
+    const stream = await openai.threads.runs.stream(
       threadId,
       run.id
     );
@@ -165,7 +165,7 @@ function handleLocalMode(res, threadId) {
 app.get('/api/threads/:threadId/messages', async (req, res) => {
   try {
     const { threadId } = req.params;
-    const messages = await openai.beta.threads.messages.list(threadId);
+    const messages = await openai.threads.messages.list(threadId);
     res.json(messages);
   } catch (error) {
     console.error('Error getting messages:', error);
