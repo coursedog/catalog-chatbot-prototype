@@ -58,6 +58,7 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
   const { threadId } = req.params;
 
   try {
+    console.log('Using Assistant ID:', ASSISTANT_ID);
     const run = await openai.beta.threads.runs.create(
       threadId,
       {
