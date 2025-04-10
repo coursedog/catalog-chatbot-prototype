@@ -7,7 +7,7 @@
     right: 30px;
     width: 60px;
     height: 60px;
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -66,7 +66,7 @@
 
 /* Chat Header */
 .chat-header {
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -108,14 +108,14 @@
 
 .ai-message {
     align-self: flex-start;
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     color: white;
     border-bottom-left-radius: 5px;
 }
 
 .user-message {
     align-self: flex-end;
-    background-color: #a5d6a7; /* Light green */
+    background-color: #c5d5ff; /* Light blue */
     color: #333;
     border-bottom-right-radius: 5px;
 }
@@ -138,7 +138,7 @@
 }
 
 .send-button {
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     color: white;
     border: none;
     border-radius: 50%;
@@ -161,6 +161,6 @@
 .close-button:focus,
 .message-input:focus,
 .send-button:focus {
-    outline: 2px solid #4CAF50;
+    outline: 2px solid #4e80ff;
     outline-offset: 2px;
 }
