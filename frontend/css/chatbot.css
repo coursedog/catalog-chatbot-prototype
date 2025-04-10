@@ -7,7 +7,7 @@
     right: 30px;
     width: 60px;
     height: 60px;
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -25,7 +25,7 @@
 .chat-icon {
     width: 30px;
     height: 30px;
-    fill: #a5d6a7; /* Light green */
+    fill: #c5d5ff; /* Light blue */
 }
 
 /* Chat Window */
@@ -66,7 +66,7 @@
 
 /* Chat Header */
 .chat-header {
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -108,16 +108,56 @@
 
 .ai-message {
     align-self: flex-start;
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     color: white;
     border-bottom-left-radius: 5px;
 }
 
 .user-message {
     align-self: flex-end;
-    background-color: #a5d6a7; /* Light green */
+    background-color: #c5d5ff; /* Light blue */
     color: #333;
     border-bottom-right-radius: 5px;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    min-height: 35px;
+}
+
+.typing-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: white;
+    margin: 0 3px;
+    animation: typing-dot 1.4s infinite ease-in-out;
+}
+
+.typing-indicator .dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-5px);
+    }
 }
 
 /* Chat Input */
@@ -138,7 +178,7 @@
 }
 
 .send-button {
-    background-color: #2e7d32; /* Dark green */
+    background-color: #4e80ff; /* Blue */
     color: white;
     border: none;
     border-radius: 50%;
@@ -161,6 +201,6 @@
 .close-button:focus,
 .message-input:focus,
 .send-button:focus {
-    outline: 2px solid #4CAF50;
+    outline: 2px solid #4e80ff;
     outline-offset: 2px;
 }
