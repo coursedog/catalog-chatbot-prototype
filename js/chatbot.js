@@ -90,10 +90,10 @@ function initChatbot() {
         const hasLongMessage = state.messages.some(msg => msg.text.length > 100);
         
         if (hasLongMessage) {
-            chatWindow.classList.add('expanded');
+            chatWindow.style.width = '720px';
             console.log('Chat window expanded due to long message');
         } else {
-            chatWindow.classList.remove('expanded');
+            chatWindow.style.width = '360px';
             console.log('Chat window normal size');
         }
     }
