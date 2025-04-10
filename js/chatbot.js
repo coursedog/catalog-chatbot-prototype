@@ -91,8 +91,10 @@ function initChatbot() {
         
         if (hasLongMessage) {
             chatWindow.classList.add('expanded');
+            console.log('Chat window expanded due to long message');
         } else {
             chatWindow.classList.remove('expanded');
+            console.log('Chat window normal size');
         }
     }
     
