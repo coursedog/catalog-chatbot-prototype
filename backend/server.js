@@ -16,10 +16,17 @@ if (!apiKey) {
   console.error('No API key provided. Please set the OPENAI_API_KEY environment variable.');
 } else {
   console.log('Using API key format:', apiKey.substring(0, 5) + '...');
+  
+  apiKey = apiKey.trim();
+  
+  if (apiKey.startsWith('sk-proj-')) {
+    console.log('Detected project-scoped API key format');
+  }
 }
 
 const openai = new OpenAI({
   apiKey: apiKey,
+  baseURL: 'https://api.openai.com/v1',
 });
 
 const ASSISTANT_ID = process.env.ASSISTANT_ID;
@@ -31,11 +38,21 @@ if (!ASSISTANT_ID) {
 
 app.post('/api/threads', async (req, res) => {
   try {
-    console.log('Attempting to create thread with beta namespace...');
+    console.log('Attempting to create thread...');
     
-    const thread = await openai.beta.threads.create();
-    console.log('Thread created successfully:', thread.id);
-    res.json({ threadId: thread.id });
+    try {
+      console.log('Trying with non-beta namespace (v2 API)...');
+      const thread = await openai.threads.create();
+      console.log('Thread created successfully with v2 API:', thread.id);
+      res.json({ threadId: thread.id });
+      return;
+    } catch (v2Error) {
+      console.log('Error with v2 API, falling back to beta namespace:', v2Error.message);
+      
+      const thread = await openai.beta.threads.create();
+      console.log('Thread created successfully with beta namespace:', thread.id);
+      res.json({ threadId: thread.id });
+    }
   } catch (error) {
     console.error('Error creating thread:', error);
     console.error('Error details:', error.message);
@@ -54,16 +71,31 @@ app.post('/api/threads/:threadId/messages', async (req, res) => {
 
     console.log(`Adding message to thread ${threadId}:`, message.substring(0, 50) + (message.length > 50 ? '...' : ''));
     
-    const threadMessage = await openai.beta.threads.messages.create(
-      threadId,
-      {
-        role: 'user',
-        content: message,
-      }
-    );
-
-    console.log('Message added:', threadMessage.id);
-    res.json({ messageId: threadMessage.id });
+    try {
+      console.log('Trying to add message with non-beta namespace (v2 API)...');
+      const threadMessage = await openai.threads.messages.create(
+        threadId,
+        {
+          role: 'user',
+          content: message,
+        }
+      );
+      console.log('Message added with v2 API:', threadMessage.id);
+      res.json({ messageId: threadMessage.id });
+      return;
+    } catch (v2Error) {
+      console.log('Error with v2 API message creation, falling back to beta namespace:', v2Error.message);
+      
+      const threadMessage = await openai.beta.threads.messages.create(
+        threadId,
+        {
+          role: 'user',
+          content: message,
+        }
+      );
+      console.log('Message added with beta namespace:', threadMessage.id);
+      res.json({ messageId: threadMessage.id });
+    }
   } catch (error) {
     console.error('Error adding message:', error);
     console.error('Error details:', error.message);
@@ -84,57 +116,66 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
       return handleLocalMode(res, threadId);
     }
 
-    console.log('OpenAI SDK version:', require('openai/package.json').version);
     console.log(`Running assistant ${ASSISTANT_ID} on thread ${threadId}`);
     
     try {
-      const run = await openai.beta.threads.runs.create(
-        threadId,
-        {
-          assistant_id: ASSISTANT_ID,
-          stream: true,
-        }
-      );
+      console.log('Trying to create run with non-beta namespace (v2 API)...');
       
-      console.log('Run created successfully:', run.id);
+      let run;
+      let stream;
       
-      const stream = await openai.beta.threads.runs.stream(
-        threadId,
-        run.id
-      );
+      try {
+        run = await openai.threads.runs.create(
+          threadId,
+          {
+            assistant_id: ASSISTANT_ID,
+            stream: true,
+          }
+        );
+        
+        console.log('Run created successfully with v2 API:', run.id);
+        
+        stream = await openai.threads.runs.stream(
+          threadId,
+          run.id
+        );
+      } catch (streamError) {
+        console.log('Error with v2 API stream creation:', streamError.message);
+        throw streamError;
+      }
       
       stream.on('textDelta', (delta, snapshot) => {
-        console.log('Text delta received:', delta.value);
+        console.log('Text delta received from v2 API:', delta.value);
         res.write(`data: ${JSON.stringify({ type: 'textDelta', delta, snapshot })}\n\n`);
       });
   
       stream.on('toolCallCreated', (toolCall) => {
-        console.log('Tool call created:', toolCall.type);
+        console.log('Tool call created from v2 API:', toolCall.type);
         res.write(`data: ${JSON.stringify({ type: 'toolCallCreated', toolCall })}\n\n`);
       });
   
       stream.on('toolCallDelta', (delta, snapshot) => {
-        console.log('Tool call delta received');
+        console.log('Tool call delta received from v2 API');
         res.write(`data: ${JSON.stringify({ type: 'toolCallDelta', delta, snapshot })}\n\n`);
       });
   
       stream.on('messageCreated', (message) => {
-        console.log('Message created:', message.id);
+        console.log('Message created from v2 API:', message.id);
         res.write(`data: ${JSON.stringify({ type: 'messageCreated', message })}\n\n`);
       });
   
       stream.on('messageDelta', (delta, snapshot) => {
-        console.log('Message delta received');
+        console.log('Message delta received from v2 API');
         res.write(`data: ${JSON.stringify({ type: 'messageDelta', delta, snapshot })}\n\n`);
       });
   
       stream.on('error', (error) => {
-        console.error('Stream error:', error);
+        console.error('Stream error from v2 API:', error);
         handleLocalMode(res, threadId);
       });
   
       stream.on('end', () => {
-        console.log('Stream ended');
+        console.log('Stream ended from v2 API');
         res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
         res.end();
       });
@@ -145,9 +186,73 @@ app.post('/api/threads/:threadId/runs', async (req, res) => {
           stream.controller.abort();
         }
       });
-    } catch (innerError) {
-      console.error('Error with streaming:', innerError);
-      handleLocalMode(res, threadId);
+      
+      return; // Successfully used v2 API
+    } catch (v2Error) {
+      console.log('Error with v2 API, falling back to beta namespace:', v2Error.message);
+      
+      try {
+        const run = await openai.beta.threads.runs.create(
+          threadId,
+          {
+            assistant_id: ASSISTANT_ID,
+            stream: true,
+          }
+        );
+        
+        console.log('Run created successfully with beta namespace:', run.id);
+        
+        const stream = await openai.beta.threads.runs.stream(
+          threadId,
+          run.id
+        );
+        
+        stream.on('textDelta', (delta, snapshot) => {
+          console.log('Text delta received from beta API:', delta.value);
+          res.write(`data: ${JSON.stringify({ type: 'textDelta', delta, snapshot })}\n\n`);
+        });
+    
+        stream.on('toolCallCreated', (toolCall) => {
+          console.log('Tool call created from beta API:', toolCall.type);
+          res.write(`data: ${JSON.stringify({ type: 'toolCallCreated', toolCall })}\n\n`);
+        });
+    
+        stream.on('toolCallDelta', (delta, snapshot) => {
+          console.log('Tool call delta received from beta API');
+          res.write(`data: ${JSON.stringify({ type: 'toolCallDelta', delta, snapshot })}\n\n`);
+        });
+    
+        stream.on('messageCreated', (message) => {
+          console.log('Message created from beta API:', message.id);
+          res.write(`data: ${JSON.stringify({ type: 'messageCreated', message })}\n\n`);
+        });
+    
+        stream.on('messageDelta', (delta, snapshot) => {
+          console.log('Message delta received from beta API');
+          res.write(`data: ${JSON.stringify({ type: 'messageDelta', delta, snapshot })}\n\n`);
+        });
+    
+        stream.on('error', (error) => {
+          console.error('Stream error from beta API:', error);
+          handleLocalMode(res, threadId);
+        });
+    
+        stream.on('end', () => {
+          console.log('Stream ended from beta API');
+          res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
+          res.end();
+        });
+    
+        req.on('close', () => {
+          console.log('Client disconnected, aborting stream');
+          if (stream && stream.controller) {
+            stream.controller.abort();
+          }
+        });
+      } catch (betaError) {
+        console.error('Error with beta API streaming:', betaError);
+        handleLocalMode(res, threadId);
+      }
     }
   } catch (error) {
     console.error('Error running assistant:', error);
