@@ -48,7 +48,8 @@
 
 /* Expanded chat window for long messages */
 .chat-window.expanded {
-    width: 720px; /* Twice the original width */
+    width: 720px !important; /* Twice the original width */
+    right: 30px !important;
 }
 
 /* Chat Header */
