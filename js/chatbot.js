@@ -44,13 +44,25 @@ function initChatbot() {
         state.isOpen = !state.isOpen;
         
         if (state.isOpen) {
-            chatWindow.style.display = 'flex';
-            chatBubble.style.display = 'none';
-            messageInput.focus(); // Focus on input field when chat opens
+            const hasLongMessage = state.messages.some(msg => msg.text.length > 100);
             
-            checkForLongMessages();
+            if (hasLongMessage) {
+                document.getElementById('chatWindowExpanded').style.display = 'flex';
+                document.getElementById('chatWindow').style.display = 'none';
+                document.getElementById('chatMessagesExpanded').innerHTML = chatMessages.innerHTML;
+                document.getElementById('messageInputExpanded').focus();
+                console.log('Showing expanded chat window');
+            } else {
+                document.getElementById('chatWindow').style.display = 'flex';
+                document.getElementById('chatWindowExpanded').style.display = 'none';
+                document.getElementById('messageInput').focus();
+                console.log('Showing regular chat window');
+            }
+            
+            chatBubble.style.display = 'none';
         } else {
-            chatWindow.style.display = 'none';
+            document.getElementById('chatWindow').style.display = 'none';
+            document.getElementById('chatWindowExpanded').style.display = 'none';
             chatBubble.style.display = 'flex';
         }
     }
