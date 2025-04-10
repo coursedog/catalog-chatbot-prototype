@@ -31,7 +31,6 @@ if (!ASSISTANT_ID) {
 
 app.post('/api/threads', async (req, res) => {
   try {
-    console.log('Creating new thread with OpenAI SDK version:', require('openai/package.json').version);
     console.log('Attempting to create thread with beta namespace...');
     
     const thread = await openai.beta.threads.create();
