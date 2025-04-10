@@ -58,7 +58,7 @@
     background-color: white !important;
     border-radius: 10px !important;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-    display: flex !important;
+    display: none !important; /* Hidden by default */
     flex-direction: column !important;
     overflow: hidden !important;
     z-index: 1000 !important;
