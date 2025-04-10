@@ -47,14 +47,16 @@ function initChatbot() {
             const hasLongMessage = state.messages.some(msg => msg.text.length > 100);
             
             if (hasLongMessage) {
-                document.getElementById('chatWindowExpanded').style.display = 'flex';
+                const expandedWindow = document.getElementById('chatWindowExpanded');
+                expandedWindow.setAttribute('style', 'display: flex !important');
                 document.getElementById('chatWindow').style.display = 'none';
                 document.getElementById('chatMessagesExpanded').innerHTML = chatMessages.innerHTML;
                 document.getElementById('messageInputExpanded').focus();
                 console.log('Showing expanded chat window');
             } else {
                 document.getElementById('chatWindow').style.display = 'flex';
-                document.getElementById('chatWindowExpanded').style.display = 'none';
+                const expandedWindow = document.getElementById('chatWindowExpanded');
+                expandedWindow.setAttribute('style', 'display: none !important');
                 document.getElementById('messageInput').focus();
                 console.log('Showing regular chat window');
             }
@@ -117,7 +119,7 @@ function initChatbot() {
         
         if (hasLongMessage) {
             regularChatWindow.style.display = 'none';
-            expandedChatWindow.style.display = 'flex';
+            expandedChatWindow.setAttribute('style', 'display: flex !important');
             
             const expandedMessages = document.getElementById('chatMessagesExpanded');
             expandedMessages.innerHTML = chatMessages.innerHTML;
@@ -125,7 +127,7 @@ function initChatbot() {
             console.log('Chat window expanded due to long message');
         } else {
             regularChatWindow.style.display = 'flex';
-            expandedChatWindow.style.display = 'none';
+            expandedChatWindow.setAttribute('style', 'display: none !important');
             console.log('Chat window normal size');
         }
     }
