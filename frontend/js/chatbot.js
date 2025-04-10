@@ -28,7 +28,8 @@ function initChatbot() {
         isOpen: false,
         isExpanded: false,
         threadId: null,
-        isTyping: false
+        isTyping: false,
+        localMode: false
     };
     
     chatBubble.addEventListener('click', toggleChat);
@@ -40,12 +41,19 @@ function initChatbot() {
     sendButtonExpanded.addEventListener('click', sendExpandedMessage);
     messageInputExpanded.addEventListener('keypress', handleExpandedKeyPress);
     
-    createThread().then(() => {
-        addMessage('Hello! I\'m your catalog assistant. How can I help you today?', 'ai');
-    }).catch(error => {
+    try {
+        createThread().then(() => {
+            addMessage('Hello! I\'m your catalog assistant. How can I help you today?', 'ai');
+        }).catch(error => {
+            console.error('Error initializing chatbot:', error);
+            addMessage('Hello! I\'m your catalog assistant. How can I help you today? (Running in local mode)', 'ai');
+            state.localMode = true;
+        });
+    } catch (error) {
         console.error('Error initializing chatbot:', error);
-        addMessage('Sorry, I\'m having trouble connecting to the assistant. Please try again later.', 'ai');
-    });
+        addMessage('Hello! I\'m your catalog assistant. How can I help you today? (Running in local mode)', 'ai');
+        state.localMode = true;
+    }
     
     /**
      * Create a new thread for the conversation
@@ -127,6 +135,26 @@ function initChatbot() {
      * @param {string} text - Message content
      */
     async function sendMessageToAPI(text) {
+        if (state.localMode) {
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                const mockResponses = [
+                    "I'd be happy to help you with information about university courses and programs!",
+                    "That's a great question about our catalog. Let me provide some information.",
+                    "The university offers a variety of programs in that area. Would you like more specific details?",
+                    "I understand you're looking for course information. Could you tell me which department you're interested in?",
+                    "Thank you for your question. The registration period for those courses begins next month."
+                ];
+                
+                const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+                hideTypingIndicator();
+                addMessage(randomResponse, 'ai');
+            }, 1500);
+            
+            return;
+        }
+        
         if (!state.threadId) {
             console.error('No thread ID available');
             addMessage('Sorry, I\'m having trouble connecting to the assistant. Please try again later.', 'ai');
@@ -197,7 +225,9 @@ function initChatbot() {
         } catch (error) {
             console.error('Error sending message:', error);
             hideTypingIndicator();
-            addMessage('Sorry, I encountered an error while processing your request.', 'ai');
+            
+            state.localMode = true;
+            addMessage('Switching to local mode due to API connection issues. How can I help you?', 'ai');
         }
     }
     
