@@ -10,20 +10,30 @@ document.addEventListener('DOMContentLoaded', initChatbot);
 function initChatbot() {
     const chatBubble = document.getElementById('chatBubble');
     const chatWindow = document.getElementById('chatWindow');
+    const chatWindowExpanded = document.getElementById('chatWindowExpanded');
     const closeButton = document.getElementById('closeButton');
+    const closeButtonExpanded = document.getElementById('closeButtonExpanded');
     const messageInput = document.getElementById('messageInput');
+    const messageInputExpanded = document.getElementById('messageInputExpanded');
     const sendButton = document.getElementById('sendButton');
+    const sendButtonExpanded = document.getElementById('sendButtonExpanded');
     const chatMessages = document.getElementById('chatMessages');
+    const chatMessagesExpanded = document.getElementById('chatMessagesExpanded');
     
     const state = {
         messages: [],
-        isOpen: false
+        isOpen: false,
+        isExpanded: false
     };
     
     chatBubble.addEventListener('click', toggleChat);
     closeButton.addEventListener('click', toggleChat);
     sendButton.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', handleKeyPress);
+    
+    closeButtonExpanded.addEventListener('click', toggleChat);
+    sendButtonExpanded.addEventListener('click', sendExpandedMessage);
+    messageInputExpanded.addEventListener('keypress', handleExpandedKeyPress);
     
     addMessage('Hello! I\'m your catalog assistant. How can I help you today?', 'ai');
     
@@ -119,9 +129,39 @@ function initChatbot() {
     }
     
     /**
+     * Handle Enter key press in expanded window input field
+     * @param {Event} e - Keypress event
+     */
+    function handleExpandedKeyPress(e) {
+        if (e.key === 'Enter') {
+            sendExpandedMessage();
+        }
+    }
+    
+    /**
+     * Send a message from the expanded chat window
+     */
+    function sendExpandedMessage() {
+        const text = document.getElementById('messageInputExpanded').value.trim();
+        if (text === '') return;
+        
+        addMessage(text, 'user');
+        document.getElementById('messageInputExpanded').value = '';
+        
+        setTimeout(() => {
+            addMessage('That sounds great!', 'ai');
+        }, 500);
+    }
+    
+    /**
      * Scroll chat messages to the bottom
      */
     function scrollToBottom() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        const expandedMessages = document.getElementById('chatMessagesExpanded');
+        if (expandedMessages) {
+            expandedMessages.scrollTop = expandedMessages.scrollHeight;
+        }
     }
 }
