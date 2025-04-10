@@ -11,10 +11,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const apiKey = process.env.OPENAI_API_KEY;
+let apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
   console.error('No API key provided. Please set the OPENAI_API_KEY environment variable.');
 } else {
+  if (apiKey.startsWith('sk-proj-')) {
+    apiKey = apiKey.replace('sk-proj-', 'sk-');
+    console.log('Reformatted API key to remove proj- prefix');
+  }
   console.log('Using API key format:', apiKey.substring(0, 5) + '...');
 }
 
