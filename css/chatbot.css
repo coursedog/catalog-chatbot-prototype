@@ -50,6 +50,7 @@
 .chat-window.expanded {
     width: 720px !important; /* Twice the original width */
     right: 30px !important;
+    max-width: 80vw !important; /* Ensure it doesn't go off-screen */
 }
 
 /* Chat Header */
